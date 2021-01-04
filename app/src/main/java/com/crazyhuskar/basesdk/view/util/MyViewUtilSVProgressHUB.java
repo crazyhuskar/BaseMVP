@@ -38,13 +38,10 @@ public class MyViewUtilSVProgressHUB {
         if (TextUtils.isEmpty(content)) {
             content = "加载提示";
         }
-        if (null == mProgressHUD) {
-            mProgressHUD.showWithStatus(content);
-        } else {
-            if (!mProgressHUD.isShowing()) {
-                mProgressHUD.showWithStatus(content);
-            }
+        if (mProgressHUD.isShowing()) {
+            mProgressHUD.dismissImmediately();
         }
+        mProgressHUD.showWithStatus(content);
     }
 
     /**
@@ -56,13 +53,10 @@ public class MyViewUtilSVProgressHUB {
         if (TextUtils.isEmpty(content)) {
             content = "信息提示";
         }
-        if (null == mProgressHUD) {
-            mProgressHUD.showInfoWithStatus(content);
-        } else {
-            if (!mProgressHUD.isShowing()) {
-                mProgressHUD.showInfoWithStatus(content);
-            }
+        if (mProgressHUD.isShowing()) {
+            mProgressHUD.dismissImmediately();
         }
+        mProgressHUD.showInfoWithStatus(content);
     }
 
     /**
@@ -74,13 +68,10 @@ public class MyViewUtilSVProgressHUB {
         if (TextUtils.isEmpty(content)) {
             content = "成功提示";
         }
-        if (null == mProgressHUD) {
-            mProgressHUD.showSuccessWithStatus(content);
-        } else {
-            if (!mProgressHUD.isShowing()) {
-                mProgressHUD.showSuccessWithStatus(content);
-            }
+        if (mProgressHUD.isShowing()) {
+            mProgressHUD.dismissImmediately();
         }
+        mProgressHUD.showSuccessWithStatus(content);
     }
 
     /**
@@ -92,13 +83,10 @@ public class MyViewUtilSVProgressHUB {
         if (TextUtils.isEmpty(content)) {
             content = "失败提示";
         }
-        if (null == mProgressHUD) {
-            mProgressHUD.showErrorWithStatus(content);
-        } else {
-            if (!mProgressHUD.isShowing()) {
-                mProgressHUD.showErrorWithStatus(content);
-            }
+        if (mProgressHUD.isShowing()) {
+            mProgressHUD.dismissImmediately();
         }
+        mProgressHUD.showErrorWithStatus(content);
     }
 
     /**
@@ -110,17 +98,13 @@ public class MyViewUtilSVProgressHUB {
         if (content < 0) {
             content = 0;
         }
-        if (null == mProgressHUD) {
-            mProgressHUD.showWithProgress("进度 " + content + "%", SVProgressHUD.SVProgressHUDMaskType.Black);
-        } else {
-            if (mProgressHUD.isShowing()) {
-                if (mProgressHUD.getProgressBar().getMax() != mProgressHUD.getProgressBar().getProgress()) {
-                    mProgressHUD.getProgressBar().setProgress(content);
-                    mProgressHUD.setText("进度 " + content + "%");
-                }
-            } else {
-                mProgressHUD.showWithProgress("进度 " + content + "%", SVProgressHUD.SVProgressHUDMaskType.Black);
+        if (mProgressHUD.isShowing()) {
+            if (mProgressHUD.getProgressBar().getMax() != mProgressHUD.getProgressBar().getProgress()) {
+                mProgressHUD.getProgressBar().setProgress(content);
+                mProgressHUD.setText("进度 " + content + "%");
             }
+        } else {
+            mProgressHUD.showWithProgress("进度 " + content + "%", SVProgressHUD.SVProgressHUDMaskType.Black);
         }
     }
 

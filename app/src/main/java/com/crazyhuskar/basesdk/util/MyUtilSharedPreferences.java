@@ -24,14 +24,14 @@ public class MyUtilSharedPreferences {
     private Activity activity;
     private boolean isGet = false;
 
-    public static MyUtilSharedPreferences getInstance(AppCompatActivity activity) {
+    public static MyUtilSharedPreferences getInstance(Activity activity) {
         if (null == instance) {
             instance = new MyUtilSharedPreferences(activity);
         }
         return instance;
     }
 
-    public MyUtilSharedPreferences(AppCompatActivity activity) {
+    public MyUtilSharedPreferences(Activity activity) {
         this.activity = activity;
         MyUtilPermission.getInstance().init(activity, new MyUtilPermission.PermissionCallback() {
             @Override
