@@ -67,4 +67,9 @@ dependencies {
     implementation 'com.google.zxing:core:3.4.0'
     //图表
     implementation 'com.github.PhilJay:MPAndroidChart:v3.0.2'
+    //选择器
+    api 'com.contrarywind:Android-PickerView:4.1.9'
+    //开关按钮
+    api 'com.bitvale:switcher:1.1.0'
+
 }
