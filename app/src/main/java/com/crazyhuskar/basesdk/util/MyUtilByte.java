@@ -291,7 +291,7 @@ public class MyUtilByte {
      * @param end
      * @return
      */
-    public static byte[] getCRC16(byte[] bytes, int begin, int end) {
+    public static byte[] getCRC16_MODBUS(byte[] bytes, int begin, int end) {
         int crc = 0xffff;
         int polynomial = 0xa001;
 
@@ -311,21 +311,23 @@ public class MyUtilByte {
     }
 
     /**
-     * crc校验是否通过
-     *
      * @param bytes
-     * @param begin
-     * @param end
-     * @param crcBegin
-     * @param crcEnd
      * @return
      */
-    public static boolean isCRC16(byte[] bytes, int begin, int end, int crcBegin, int crcEnd) {
-        if (bytes.length > 0) {
-            byte[] t = getCRC16(bytes, begin, end);
-            return bytes[crcBegin] == t[0] && bytes[crcEnd] == t[1];
-        } else {
-            return false;
+    public static byte[] getCRC16_XMODEM(byte[] bytes, int begin, int end) {
+        int crc = 0x0000;
+        int polynomial = 0x1021;
+        for (int index = begin; index < end; index++) {
+            byte b = bytes[index];
+            for (int i = 0; i < 8; i++) {
+                boolean bit = ((b >> (7 - i) & 1) == 1);
+                boolean c15 = ((crc >> 15 & 1) == 1);
+                crc <<= 1;
+                if (c15 ^ bit)
+                    crc ^= polynomial;
+            }
         }
+        crc &= 0xffff;
+        return MyUtilByte.intToBytes(crc, 2);
     }
 }
