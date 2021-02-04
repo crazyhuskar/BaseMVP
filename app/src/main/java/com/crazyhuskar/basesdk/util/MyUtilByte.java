@@ -330,4 +330,16 @@ public class MyUtilByte {
         crc &= 0xffff;
         return MyUtilByte.intToBytes(crc, 2);
     }
+
+    /**
+     * @param bytes
+     * @param begin
+     * @param length
+     * @return
+     */
+    public static byte[] copyByte(byte[] bytes, int begin, int length) {
+        byte[] bytes_t = new byte[length];
+        System.arraycopy(bytes, begin, bytes_t, 0, length);
+        return bytes_t;
+    }
 }
