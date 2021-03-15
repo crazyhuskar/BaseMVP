@@ -1,5 +1,8 @@
 package com.crazyhuskar.basesdk.activity;
 
+import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -122,7 +125,7 @@ public abstract class MyBaseActivity extends AppCompatActivity {
      * @param centerTxt 文字或id
      */
     public void setCommonTitle(Object centerTxt) {
-        setCommonTitle(null, centerTxt, null, R.drawable.arrow_back_24dp, null, null, null);
+        setCommonTitle(null, centerTxt, null, R.drawable.arrow_back_24dp, null, null, null, null);
     }
 
     /**
@@ -132,29 +135,43 @@ public abstract class MyBaseActivity extends AppCompatActivity {
      * @param leftRes   左边按钮图片id
      */
     public void setCommonTitle(Object centerTxt, Object leftRes) {
-        setCommonTitle(null, centerTxt, null, leftRes, null, null, null);
+        setCommonTitle(null, centerTxt, null, leftRes, null, null, null, null);
     }
 
     /**
      * 设置标题栏
      *
-     * @param leftTxt   文字或id
-     * @param centerTxt 文字或id
-     * @param rightTxt  文字或id
-     * @param leftRes   图片id
-     * @param rightRes  图片id
-     * @param bgColor   #ffffffff
-     * @param lineColor #ffffffff
+     * @param leftText   文字或id
+     * @param centerText 文字或id
+     * @param rightText  文字或id
+     * @param leftRes    图片id
+     * @param rightRes   图片id
+     * @param bgColor    #ffffffff
+     * @param lineColor  #ffffffff
      */
-    public void setCommonTitle(Object leftTxt, Object centerTxt, Object rightTxt, Object leftRes, Object rightRes,
-                                Object bgColor, Object lineColor) {
+    public void setCommonTitle(Object leftText, Object centerText, Object rightText, Object leftRes, Object rightRes,
+                               Object textColor, Object bgColor, Object lineColor) {
+        TextView left_text = findViewById(R.id.common_title_left_text);
+        TextView right_text = findViewById(R.id.common_title_right_text);
+        TextView center_text = findViewById(R.id.common_title_center_text);
+        if (textColor != null) {
+            if (textColor instanceof String) {
+                left_text.setTextColor(Color.parseColor((String) textColor));
+                center_text.setTextColor(Color.parseColor((String) textColor));
+                right_text.setTextColor(Color.parseColor((String) textColor));
+            } else if (textColor instanceof Integer) {
+                left_text.setTextColor(((Integer) textColor));
+                center_text.setTextColor(((Integer) textColor));
+                right_text.setTextColor(((Integer) textColor));
+            }
+        }
         commonTitle = new CommonTitle(this, (ImageButton) findViewById(R.id.common_title_left_img),
                 (ImageButton) findViewById(R.id.common_title_right_img),
-                (TextView) findViewById(R.id.common_title_left_text),
-                (TextView) findViewById(R.id.common_title_right_text),
-                (TextView) findViewById(R.id.common_title_center_text),
+                left_text,
+                center_text,
+                right_text,
                 findViewById(R.id.view_common_title),
                 findViewById(R.id.view_common_title_line));
-        commonTitle.addCommonTitle(leftTxt, centerTxt, rightTxt, leftRes, rightRes, bgColor, lineColor);
+        commonTitle.addCommonTitle(leftText, centerText, rightText, leftRes, rightRes, bgColor, lineColor);
     }
 }

@@ -48,7 +48,7 @@ public class CommonTitle {
 
     private Context context;
 
-    public CommonTitle(Context context, ImageButton leftTitleImg, ImageButton rightTitleImg, TextView leftTitleText, TextView rightTitleText, TextView centerTitleText, View titleBg, View titleLine) {
+    public CommonTitle(Context context, ImageButton leftTitleImg, ImageButton rightTitleImg, TextView leftTitleText, TextView centerTitleText, TextView rightTitleText, View titleBg, View titleLine) {
         this.leftTitleImg = leftTitleImg;
 
         this.rightTitleImg = rightTitleImg;
