@@ -91,15 +91,7 @@ public class SelectorActivity extends AppCompatActivity {
         //    }
         //});
 
-        selectorAdapter.setOnAdapterClick(new SelectorAdapter.OnAdapterClick() {
-            @Override
-            public void onClicks(int position) {
-                //更新数据
-                //selectorAdapter.updateStrList(city_elist, roo);
-//                selectorAdapter.updateData(roo);
-                closedSelector(roo.get(position));
-            }
-        });
+        selectorAdapter.setOnAdapterClick((position, txlDataBean) -> closedSelector(txlDataBean));
 
     }
 
