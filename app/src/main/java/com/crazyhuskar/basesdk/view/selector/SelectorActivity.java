@@ -14,6 +14,7 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.crazyhuskar.basesdk.R;
+import com.crazyhuskar.basesdk.util.MyUtilJson;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,12 +37,7 @@ public class SelectorActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_selector);
         break_iv = (ImageView) findViewById(R.id.break_iv);
-        break_iv.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                closedSelector("");
-            }
-        });
+        break_iv.setOnClickListener(view -> closedSelector(new TxlDataBean()));
         title = (TextView) findViewById(R.id.title_tv);
         city_etext = (EditText) findViewById(R.id.city_etext);
         city_etext.addTextChangedListener(new EditChangedListener());//监听输入状态
@@ -101,7 +97,7 @@ public class SelectorActivity extends AppCompatActivity {
                 //更新数据
                 //selectorAdapter.updateStrList(city_elist, roo);
 //                selectorAdapter.updateData(roo);
-                closedSelector(roo.get(position).getName());
+                closedSelector(roo.get(position));
             }
         });
 
@@ -112,16 +108,16 @@ public class SelectorActivity extends AppCompatActivity {
      *
      * @param rooValue
      */
-    private void closedSelector(String rooValue) {
+    private void closedSelector(TxlDataBean rooValue) {
         Intent inc = new Intent();
-        inc.putExtra("rooValue", rooValue);
+        inc.putExtra("selectValue", MyUtilJson.toJSONString(rooValue));
         setResult(6, inc);
         finish();
     }
 
     @Override
     public void onBackPressed() {//手机物理返回键
-        closedSelector("");
+        closedSelector(new TxlDataBean());
         //super.onBackPressed();
     }
 

@@ -9,9 +9,8 @@ import java.io.Serializable;
  */
 public class TxlDataBean implements Serializable {
     private String id;
-    private String avatar;
     private String name;
-    private String xz_classmanagement_id;//班级管理ID
+    private String data;
     private boolean onSelect = false;//是否选中
 
     public String getId() {
@@ -22,14 +21,6 @@ public class TxlDataBean implements Serializable {
         this.id = id;
     }
 
-    public String getAvatar() {
-        return avatar;
-    }
-
-    public void setAvatar(String avatar) {
-        this.avatar = avatar;
-    }
-
     public String getName() {
         return name;
     }
@@ -38,12 +29,12 @@ public class TxlDataBean implements Serializable {
         this.name = name;
     }
 
-    public String getXz_classmanagement_id() {
-        return xz_classmanagement_id;
+    public String getData() {
+        return data;
     }
 
-    public void setXz_classmanagement_id(String xz_classmanagement_id) {
-        this.xz_classmanagement_id = xz_classmanagement_id;
+    public void setData(String data) {
+        this.data = data;
     }
 
     public boolean getOnSelect() {
