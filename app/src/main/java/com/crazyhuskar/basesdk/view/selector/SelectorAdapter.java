@@ -193,7 +193,7 @@ public class SelectorAdapter extends BaseExpandableListAdapter {
             child_rl.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    mClick.onClicks(index);
+                    mClick.onClicks(index, dataList.get(index));
                 }
             });
 
@@ -212,7 +212,7 @@ public class SelectorAdapter extends BaseExpandableListAdapter {
     private OnAdapterClick mClick;
 
     public interface OnAdapterClick {
-        void onClicks(int position);
+        void onClicks(int position, TxlDataBean txlDataBean);
     }
 
     public void setOnAdapterClick(OnAdapterClick click) {
