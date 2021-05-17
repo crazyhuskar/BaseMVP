@@ -115,6 +115,7 @@ public abstract class MyBaseCaptureActivity extends MyBaseActivity implements Su
         characterSet = null;
 
         beepManager.updatePrefs();
+        SurfaceView surfaceView = getSurfaceView();
 
         if (intent != null) {
             String action = intent.getAction();
@@ -125,8 +126,10 @@ public abstract class MyBaseCaptureActivity extends MyBaseActivity implements Su
                 decodeHints = DecodeHintManager.parseDecodeHints(intent);
 
                 if (intent.hasExtra(Intents.Scan.WIDTH) && intent.hasExtra(Intents.Scan.HEIGHT)) {
-                    int width = intent.getIntExtra(Intents.Scan.WIDTH, 0);
-                    int height = intent.getIntExtra(Intents.Scan.HEIGHT, 0);
+//                    int width = intent.getIntExtra(Intents.Scan.WIDTH, 0);
+                    int width = surfaceView.getWidth();
+//                    int height = intent.getIntExtra(Intents.Scan.HEIGHT, 0);
+                    int height = surfaceView.getHeight();
                     if (width > 0 && height > 0) {
                         cameraManager.setManualFramingRect(width, height);
                     }
@@ -142,7 +145,6 @@ public abstract class MyBaseCaptureActivity extends MyBaseActivity implements Su
             characterSet = intent.getStringExtra(Intents.Scan.CHARACTER_SET);
         }
 
-        SurfaceView surfaceView = getSurfaceView();
         if (surfaceView == null) {
             throw new RuntimeException("SurfaceView can not be null");
         }
