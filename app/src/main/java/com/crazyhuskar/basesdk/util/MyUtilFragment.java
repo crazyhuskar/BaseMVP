@@ -19,6 +19,19 @@ public class MyUtilFragment {
         this.menuList = meunList;
     }
 
+    public MyUtilFragment initFragment(Fragment fragment) {
+        FragmentTransaction ft = manager.beginTransaction();
+        Fragment fragment_t = manager.findFragmentByTag(fragment.getClass().getName());
+        if (null == fragment_t) {
+            fragment_t = fragment;
+        }
+        if (!fragment_t.isAdded()) {
+            ft.add(viewID, fragment_t, fragment_t.getClass().getName());
+        }
+        ft.commit();
+        return this;
+    }
+
     public void show(int i) {
 
         FragmentTransaction ft = manager.beginTransaction();
