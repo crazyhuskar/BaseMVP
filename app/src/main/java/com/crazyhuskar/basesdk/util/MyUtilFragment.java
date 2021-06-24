@@ -50,10 +50,23 @@ public class MyUtilFragment {
         //判断此Fragment是否已经添加到FragmentTransaction事物中
         if (!fragment.isAdded()) {
             ft.add(viewID, fragment, fragment.getClass().getName());
-            ft.show(fragment);
-        } else {
-            ft.show(fragment);
         }
+        ft.show(fragment);
+        ft.commit();
+    }
+
+    public void show(Fragment fragment) {
+        FragmentTransaction ft = manager.beginTransaction();
+        //判断当前的Fragment是否为空，不为空则隐藏
+        if (null != mCurrentFragment) {
+            ft.hide(mCurrentFragment);
+        }
+        mCurrentFragment = fragment;
+        //判断此Fragment是否已经添加到FragmentTransaction事物中
+        if (!fragment.isAdded()) {
+            ft.add(viewID, fragment, fragment.getClass().getName());
+        }
+        ft.show(fragment);
         ft.commit();
     }
 }

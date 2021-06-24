@@ -94,17 +94,17 @@ public class MyViewUtilSVProgressHUB {
      *
      * @param content
      */
-    public void showProgressHUDWithProgress(int content) {
+    public void showProgressHUDWithProgress(String content_msg, int content) {
         if (content < 0) {
             content = 0;
         }
         if (mProgressHUD.isShowing()) {
             if (mProgressHUD.getProgressBar().getMax() != mProgressHUD.getProgressBar().getProgress()) {
                 mProgressHUD.getProgressBar().setProgress(content);
-                mProgressHUD.setText("进度 " + content + "%");
+                mProgressHUD.setText(content_msg + content + "%");
             }
         } else {
-            mProgressHUD.showWithProgress("进度 " + content + "%", SVProgressHUD.SVProgressHUDMaskType.Black);
+            mProgressHUD.showWithProgress(content_msg + content + "%", SVProgressHUD.SVProgressHUDMaskType.Black);
         }
     }
 
