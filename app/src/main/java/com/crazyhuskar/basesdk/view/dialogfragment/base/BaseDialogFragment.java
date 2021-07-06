@@ -57,7 +57,7 @@ public abstract class BaseDialogFragment extends DialogFragment {
         super.onViewCreated(view, savedInstanceState);
         //去除Dialog默认头部
         Dialog dialog = getDialog();
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+//        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setCanceledOnTouchOutside(isCancelableOutside());
         if (dialog.getWindow() != null && getDialogAnimationRes() > 0) {
             dialog.getWindow().setWindowAnimations(getDialogAnimationRes());
