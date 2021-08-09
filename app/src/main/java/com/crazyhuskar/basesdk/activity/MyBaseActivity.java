@@ -1,11 +1,13 @@
 package com.crazyhuskar.basesdk.activity;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
@@ -59,6 +61,15 @@ public abstract class MyBaseActivity extends AppCompatActivity {
             initEventBus();
         } else {
             finish();
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (getCurrentFocus() != null) {
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
         }
     }
 
