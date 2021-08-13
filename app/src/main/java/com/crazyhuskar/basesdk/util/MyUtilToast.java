@@ -8,14 +8,20 @@ import android.widget.Toast;
  * @date 2018/6/1
  */
 public class MyUtilToast {
+    private static Toast toast;
+
     /**
      * 短时间显示Toast
      *
-     * @param context 上下文
      * @param message 信息
      */
     public static void showShort(Context context, String message) {
-        Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+        if (toast == null) {
+            toast = Toast.makeText(context, message, Toast.LENGTH_SHORT);
+        } else {
+            toast.setText(message);
+        }
+        toast.show();
     }
 
     /**
@@ -25,7 +31,12 @@ public class MyUtilToast {
      * @param message
      */
     public static void showShort(Context context, int message) {
-        Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+        if (toast == null) {
+            toast = Toast.makeText(context, message, Toast.LENGTH_SHORT);
+        } else {
+            toast.setText(message);
+        }
+        toast.show();
     }
 
     /**
@@ -35,7 +46,12 @@ public class MyUtilToast {
      * @param message
      */
     public static void showLong(Context context, String message) {
-        Toast.makeText(context, message, Toast.LENGTH_LONG).show();
+        if (toast == null) {
+            toast = Toast.makeText(context, message, Toast.LENGTH_LONG);
+        } else {
+            toast.setText(message);
+        }
+        toast.show();
     }
 
     /**
@@ -45,7 +61,13 @@ public class MyUtilToast {
      * @param message
      */
     public static void showLong(Context context, int message) {
-        Toast.makeText(context, message, Toast.LENGTH_LONG).show();
+        if (toast == null) {
+            toast = Toast.makeText(context, message, Toast.LENGTH_LONG);
+        } else {
+            toast.setText(message);
+        }
+        toast.show();
     }
+
 
 }
