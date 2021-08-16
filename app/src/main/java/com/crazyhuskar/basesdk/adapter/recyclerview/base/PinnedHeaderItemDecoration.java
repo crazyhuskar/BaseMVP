@@ -7,8 +7,13 @@ import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.StaggeredGridLayoutManager;
+
 import com.crazyhuskar.basesdk.R;
-import com.crazyhuskar.basesdk.adapter.recyclerview.bean.ClickBounds;
 import com.crazyhuskar.basesdk.adapter.recyclerview.callback.OnHeaderClickListener;
 import com.crazyhuskar.basesdk.adapter.recyclerview.callback.OnItemTouchListener;
 import com.crazyhuskar.basesdk.adapter.recyclerview.util.DividerHelper;
@@ -16,20 +21,13 @@ import com.crazyhuskar.basesdk.adapter.recyclerview.util.DividerHelper;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 
-import androidx.core.content.ContextCompat;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.StaggeredGridLayoutManager;
-
 /**
- * 这个是单独一个布局的标签
- * </p>
- * 注意：标签所在最外层布局不能设置marginTop，因为往上滚动遮不住真正的标签;marginBottom还有问题待解决
- *
- * @author HG
+ * Created by Oubowu on 2016/7/21 15:38.
+ * <p>这个是单独一个布局的标签</p>
+ * <p>porting from https://github.com/takahr/pinned-section-item-decoration</p>
+ * <p>注意：标签所在最外层布局不能设置marginTop，因为往上滚动遮不住真正的标签;marginBottom还有问题待解决</p>
  */
-public class HeaderItemDecoration extends RecyclerView.ItemDecoration {
+public class PinnedHeaderItemDecoration extends RecyclerView.ItemDecoration {
 
     private OnHeaderClickListener mHeaderClickListener;
 
@@ -42,7 +40,6 @@ public class HeaderItemDecoration extends RecyclerView.ItemDecoration {
     private int[] mClickIds;
 
     private Drawable mDrawable;
-    @SuppressWarnings("rawtypes")
     private RecyclerView.Adapter mAdapter;
 
     // 缓存的标签
@@ -81,12 +78,16 @@ public class HeaderItemDecoration extends RecyclerView.ItemDecoration {
 
     private int mPinnedHeaderType;
 
+    private boolean mDisableDrawHeader;
+
+    private RecyclerView mParent;
+
     // 当我们调用mRecyclerView.addItemDecoration()方法添加decoration的时候，RecyclerView在绘制的时候，去会绘制decorator，即调用该类的onDraw和onDrawOver方法，
     // 1.onDraw方法先于drawChildren
     // 2.onDrawOver在drawChildren之后，一般我们选择复写其中一个即可。
     // 3.getItemOffsets 可以通过outRect.set()为每个Item设置一定的偏移量，主要用于绘制Decorator。
 
-    private HeaderItemDecoration(Builder builder) {
+    private PinnedHeaderItemDecoration(Builder builder) {
         mEnableDivider = builder.enableDivider;
         mHeaderClickListener = builder.headerClickListener;
         mDividerId = builder.dividerId;
@@ -96,8 +97,7 @@ public class HeaderItemDecoration extends RecyclerView.ItemDecoration {
     }
 
     @Override
-    public void getItemOffsets(final Rect outRect, final View view, final RecyclerView parent,
-                               RecyclerView.State state) {
+    public void getItemOffsets(final Rect outRect, final View view, final RecyclerView parent, RecyclerView.State state) {
 
         checkCache(parent);
 
@@ -106,8 +106,7 @@ public class HeaderItemDecoration extends RecyclerView.ItemDecoration {
         }
 
         if (mDrawable == null) {
-            mDrawable = ContextCompat.getDrawable(parent.getContext(),
-                    mDividerId != 0 ? mDividerId : R.drawable.adapter_divider);
+            mDrawable = ContextCompat.getDrawable(parent.getContext(), mDividerId != 0 ? mDividerId : R.drawable.adapter_divider);
         }
 
         if (parent.getLayoutManager() instanceof GridLayoutManager) {
@@ -116,8 +115,7 @@ public class HeaderItemDecoration extends RecyclerView.ItemDecoration {
                 int position = parent.getChildAdapterPosition(view);
                 if (isFirstColumn(parent, position, spanCount)) {
                     // 第一列要多画左边
-                    outRect.set(mDrawable.getIntrinsicWidth(), 0, mDrawable.getIntrinsicWidth(),
-                            mDrawable.getIntrinsicHeight());
+                    outRect.set(mDrawable.getIntrinsicWidth(), 0, mDrawable.getIntrinsicWidth(), mDrawable.getIntrinsicHeight());
                 } else {
                     outRect.set(0, 0, mDrawable.getIntrinsicWidth(), mDrawable.getIntrinsicHeight());
                 }
@@ -131,12 +129,10 @@ public class HeaderItemDecoration extends RecyclerView.ItemDecoration {
             if (isPinnedHeader(parent, view)) {
                 outRect.set(0, 0, 0, mDrawable.getIntrinsicHeight());
             } else {
-                final StaggeredGridLayoutManager.LayoutParams slp = (StaggeredGridLayoutManager.LayoutParams) view
-                        .getLayoutParams();
+                final StaggeredGridLayoutManager.LayoutParams slp = (StaggeredGridLayoutManager.LayoutParams) view.getLayoutParams();
                 // slp.getSpanIndex(): 这个可以拿到它在同一行排序的真实顺序
                 if (slp.getSpanIndex() == 0) {
-                    outRect.set(mDrawable.getIntrinsicWidth(), 0, mDrawable.getIntrinsicWidth(),
-                            mDrawable.getIntrinsicHeight());
+                    outRect.set(mDrawable.getIntrinsicWidth(), 0, mDrawable.getIntrinsicWidth(), mDrawable.getIntrinsicHeight());
                 } else {
                     outRect.set(0, 0, mDrawable.getIntrinsicWidth(), mDrawable.getIntrinsicHeight());
                 }
@@ -144,29 +140,34 @@ public class HeaderItemDecoration extends RecyclerView.ItemDecoration {
         }
     }
 
+
     @Override
     public void onDraw(Canvas c, RecyclerView parent, RecyclerView.State state) {
 
         // 检测到标签存在的时候，将标签强制固定在顶部
         createPinnedHeader(parent);
 
-        if (mPinnedHeaderView != null && mFirstVisiblePosition >= mPinnedHeaderPosition) {
+        if (!mDisableDrawHeader && mPinnedHeaderView != null && mFirstVisiblePosition >= mPinnedHeaderPosition) {
 
             mClipBounds = c.getClipBounds();
             // getTop拿到的是它的原点(它自身的padding值包含在内)相对parent的顶部距离，加上它的高度后就是它的底部所处的位置
             final int headEnd = mPinnedHeaderView.getTop() + mPinnedHeaderView.getHeight();
             // 根据坐标查找view，headEnd + 1找到的就是mPinnedHeaderView底部下面的view
-            final View belowView = parent.findChildViewUnder(c.getWidth() / 2, headEnd + 1);
-            if (isPinnedHeader(parent, belowView)) {
+//            final View belowView = parent.findChildViewUnder(c.getWidth() / 2, headEnd + 1);
+            // 解决头部闪烁问题
+            final View belowView = parent.findChildViewUnder(c.getWidth() / 2, headEnd);
+            int belowViewAdapterPosition = parent.getChildAdapterPosition(belowView);
+            if (belowViewAdapterPosition > mFirstVisiblePosition && isPinnedHeader(parent, belowView)) {
                 // 如果是标签的话，缓存的标签就要同步跟此标签移动
                 // 根据belowView相对顶部距离计算出缓存标签的位移
-                mPinnedHeaderOffset = belowView.getTop()
-                        - (mRecyclerViewPaddingTop + mPinnedHeaderView.getHeight() + mHeaderTopMargin);
+                mPinnedHeaderOffset = belowView.getTop() - (mRecyclerViewPaddingTop + mPinnedHeaderView.getHeight() + mHeaderTopMargin);
                 // 锁定的矩形顶部为v.getTop(趋势是mPinnedHeaderView.getHeight()->0)
-                mClipBounds.top = belowView.getTop();
+                // mClipBounds.top = belowView.getTop();
+                mClipBounds.top = mRecyclerViewPaddingTop;
             } else {
                 mPinnedHeaderOffset = 0;
-                mClipBounds.top = mRecyclerViewPaddingTop + mPinnedHeaderView.getHeight();
+                // mClipBounds.top = mRecyclerViewPaddingTop + mPinnedHeaderView.getHeight()*0;
+                mClipBounds.top = mRecyclerViewPaddingTop;
             }
             // 锁定画布绘制范围，记为A
             c.clipRect(mClipBounds);
@@ -187,8 +188,7 @@ public class HeaderItemDecoration extends RecyclerView.ItemDecoration {
         }
 
         // 不让分隔线画出界限
-        c.clipRect(parent.getPaddingLeft(), parent.getPaddingTop(), parent.getWidth() - parent.getPaddingRight(),
-                parent.getHeight() - parent.getPaddingBottom());
+        c.clipRect(parent.getPaddingLeft(), parent.getPaddingTop(), parent.getWidth() - parent.getPaddingRight(), parent.getHeight() - parent.getPaddingBottom());
 
         if (parent.getLayoutManager() instanceof GridLayoutManager) {
             int childCount = parent.getChildCount();
@@ -235,19 +235,23 @@ public class HeaderItemDecoration extends RecyclerView.ItemDecoration {
     @Override
     public void onDrawOver(Canvas c, RecyclerView parent, RecyclerView.State state) {
 
-        if (mPinnedHeaderView != null && mFirstVisiblePosition >= mPinnedHeaderPosition) {
+        if (!mDisableDrawHeader && mPinnedHeaderView != null && mFirstVisiblePosition >= mPinnedHeaderPosition) {
             c.save();
 
-            mItemTouchListener.invalidTopAndBottom(mPinnedHeaderOffset);
+            if (mItemTouchListener != null) {
+                mItemTouchListener.invalidTopAndBottom(mPinnedHeaderOffset);
+            }
 
             mClipBounds.top = mRecyclerViewPaddingTop + mHeaderTopMargin;
             // 锁定画布绘制范围，记为B
             // REVERSE_DIFFERENCE，实际上就是求得的B和A的差集范围，即B－A，只有在此范围内的绘制内容才会被显示
             // 因此,只绘制(0,0,parent.getWidth(),belowView.getTop())这个范围，然后画布移动了mPinnedHeaderTop，所以刚好是绘制顶部标签移动的范围
             // 低版本不行，换回Region.Op.UNION并集
-            c.clipRect(mClipBounds, Region.Op.UNION);
-            c.translate(mRecyclerViewPaddingLeft + mHeaderLeftMargin,
-                    mPinnedHeaderOffset + mRecyclerViewPaddingTop + mHeaderTopMargin);
+
+            // 解决编译版本28修改后的抛出异常：java.lang.IllegalArgumentException: Invalid Region.Op - only INTERSECT and DIFFERENCE are allowed
+            c.clipRect(mClipBounds, Region.Op.INTERSECT);
+
+            c.translate(mRecyclerViewPaddingLeft + mHeaderLeftMargin, mPinnedHeaderOffset + mRecyclerViewPaddingTop + mHeaderTopMargin);
             mPinnedHeaderView.draw(c);
 
             c.restore();
@@ -272,17 +276,6 @@ public class HeaderItemDecoration extends RecyclerView.ItemDecoration {
         }
         final int type = mAdapter.getItemViewType(position);
         return isPinnedHeaderType(type);
-    }
-
-    public void refreshHeader(RecyclerView parent) {
-
-        final RecyclerView.Adapter adapter = parent.getAdapter();
-        // 适配器为null或者不同，清空缓存
-        mPinnedHeaderView = null;
-        mPinnedHeaderPosition = -1;
-        mAdapter = adapter;
-
-        createPinnedHeader(parent);
     }
 
     /**
@@ -321,17 +314,26 @@ public class HeaderItemDecoration extends RecyclerView.ItemDecoration {
             ViewGroup.LayoutParams lp = mPinnedHeaderView.getLayoutParams();
             if (lp == null) {
                 // 标签默认宽度占满parent
-                lp = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT);
+                lp = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
                 mPinnedHeaderView.setLayoutParams(lp);
             }
 
             // 对高度进行处理
-            int heightMode = View.MeasureSpec.getMode(lp.height);
-            int heightSize = View.MeasureSpec.getSize(lp.height);
+            int heightMode;
+            int heightSize;
 
-            if (heightMode == View.MeasureSpec.UNSPECIFIED) {
+            if (lp.height >= 0) {
                 heightMode = View.MeasureSpec.EXACTLY;
+                heightSize = lp.height;
+            } else if (lp.height == ViewGroup.LayoutParams.MATCH_PARENT) {
+                heightMode = View.MeasureSpec.EXACTLY;
+                heightSize = parent.getHeight();
+            } else if (lp.height == ViewGroup.LayoutParams.WRAP_CONTENT) {
+                heightMode = View.MeasureSpec.AT_MOST;
+                heightSize = parent.getHeight();
+            } else {
+                heightMode = View.MeasureSpec.AT_MOST;
+                heightSize = parent.getHeight();
             }
 
             mRecyclerViewPaddingLeft = parent.getPaddingLeft();
@@ -353,29 +355,27 @@ public class HeaderItemDecoration extends RecyclerView.ItemDecoration {
             heightSize = Math.min(heightSize, maxHeight);
 
             // 因为标签默认宽度占满parent，所以宽度强制为RecyclerView的宽度减去padding
-            final int widthSpec = View.MeasureSpec.makeMeasureSpec(parent.getWidth() - mRecyclerViewPaddingLeft
-                    - recyclerViewPaddingRight - mHeaderLeftMargin - mHeaderRightMargin, View.MeasureSpec.EXACTLY);
+            final int widthSpec = View.MeasureSpec
+                    .makeMeasureSpec(parent.getWidth() - mRecyclerViewPaddingLeft - recyclerViewPaddingRight - mHeaderLeftMargin - mHeaderRightMargin,
+                            View.MeasureSpec.EXACTLY);
             final int heightSpec = View.MeasureSpec.makeMeasureSpec(heightSize, heightMode);
             // 强制测量
             mPinnedHeaderView.measure(widthSpec, heightSpec);
 
             mLeft = mRecyclerViewPaddingLeft + mHeaderLeftMargin;
+            mRight = mPinnedHeaderView.getMeasuredWidth() + mLeft;
             mTop = mRecyclerViewPaddingTop + mHeaderTopMargin;
-            mRight = mPinnedHeaderView.getMeasuredWidth() + mRecyclerViewPaddingLeft + mHeaderLeftMargin
-                    + mHeaderRightMargin;
-            mBottom = mPinnedHeaderView.getMeasuredHeight() + mRecyclerViewPaddingTop + mHeaderTopMargin
-                    + mHeaderBottomMargin;
+            mBottom = mPinnedHeaderView.getMeasuredHeight() + mTop;
 
             // 位置强制布局在顶部
-            mPinnedHeaderView.layout(mLeft, mTop, mRight - mHeaderRightMargin, mBottom - mHeaderBottomMargin);
+            mPinnedHeaderView.layout(mLeft, mTop, mRight, mBottom);
 
-            if (mItemTouchListener == null) {
+            if (mItemTouchListener == null && mHeaderClickListener != null) {
                 mItemTouchListener = new OnItemTouchListener(parent.getContext());
                 try {
                     final Field field = parent.getClass().getDeclaredField("mOnItemTouchListeners");
                     field.setAccessible(true);
-                    final ArrayList<OnItemTouchListener> touchListeners = (ArrayList<OnItemTouchListener>) field
-                            .get(parent);
+                    final ArrayList<RecyclerView.OnItemTouchListener> touchListeners = (ArrayList<RecyclerView.OnItemTouchListener>) field.get(parent);
                     touchListeners.add(0, mItemTouchListener);
                 } catch (NoSuchFieldException e) {
                     e.printStackTrace();
@@ -383,27 +383,24 @@ public class HeaderItemDecoration extends RecyclerView.ItemDecoration {
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
                     parent.addOnItemTouchListener(mItemTouchListener);
+                } catch (Exception e) {
+                    // 防止android 9禁止了反射调用
+                    e.printStackTrace();
+                    parent.addOnItemTouchListener(mItemTouchListener);
                 }
-                if (mHeaderClickListener != null) {
-                    mItemTouchListener.setHeaderClickListener(mHeaderClickListener);
-                    mItemTouchListener.disableHeaderClick(mDisableHeaderClick);
-                }
-                mItemTouchListener.setClickBounds(OnItemTouchListener.HEADER_ID,
-                        new ClickBounds(mPinnedHeaderView, mLeft, mTop, mRight, mBottom));
+                mItemTouchListener.setHeaderClickListener(mHeaderClickListener);
+                mItemTouchListener.disableHeaderClick(mDisableHeaderClick);
+                mItemTouchListener.setClickBounds(OnItemTouchListener.HEADER_ID, mPinnedHeaderView);
             }
 
             if (mHeaderClickListener != null) {
                 // OnItemTouchListener.HEADER_ID代表是标签的Id
-                mItemTouchListener.setClickBounds(OnItemTouchListener.HEADER_ID,
-                        new ClickBounds(mPinnedHeaderView, mLeft, mTop, mRight, mBottom));
+                mItemTouchListener.setClickBounds(OnItemTouchListener.HEADER_ID, mPinnedHeaderView);
                 if (mHeaderClickListener != null && mClickIds != null && mClickIds.length > 0) {
                     for (int mClickId : mClickIds) {
                         final View view = mPinnedHeaderView.findViewById(mClickId);
-                        if (view != null) {
-                            mItemTouchListener.setClickBounds(mClickId,
-                                    new ClickBounds(view, view.getLeft(), view.getTop(),
-                                            view.getLeft() + view.getMeasuredWidth(),
-                                            view.getTop() + view.getMeasuredHeight()));
+                        if (view != null && view.getVisibility() == View.VISIBLE) {
+                            mItemTouchListener.setClickBounds(mClickId, view);
                         }
                     }
                 }
@@ -479,15 +476,61 @@ public class HeaderItemDecoration extends RecyclerView.ItemDecoration {
      *
      * @param parent
      */
-    @SuppressWarnings("rawtypes")
     private void checkCache(final RecyclerView parent) {
+
+        if (mParent != parent) {
+            mParent = parent;
+        }
+
         final RecyclerView.Adapter adapter = parent.getAdapter();
         if (mAdapter != adapter) {
             // 适配器为null或者不同，清空缓存
             mPinnedHeaderView = null;
             mPinnedHeaderPosition = -1;
             mAdapter = adapter;
+            mAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+                @Override
+                public void onChanged() {
+                    super.onChanged();
+                    reset();
+                }
+
+                @Override
+                public void onItemRangeChanged(int positionStart, int itemCount) {
+                    super.onItemRangeChanged(positionStart, itemCount);
+                    reset();
+                }
+
+                @Override
+                public void onItemRangeChanged(int positionStart, int itemCount, Object payload) {
+                    super.onItemRangeChanged(positionStart, itemCount, payload);
+                    reset();
+                }
+
+                @Override
+                public void onItemRangeInserted(int positionStart, int itemCount) {
+                    super.onItemRangeInserted(positionStart, itemCount);
+                    reset();
+                }
+
+                @Override
+                public void onItemRangeRemoved(int positionStart, int itemCount) {
+                    super.onItemRangeRemoved(positionStart, itemCount);
+                    reset();
+                }
+
+                @Override
+                public void onItemRangeMoved(int fromPosition, int toPosition, int itemCount) {
+                    super.onItemRangeMoved(fromPosition, toPosition, itemCount);
+                    reset();
+                }
+            });
         }
+    }
+
+    private void reset() {
+        mPinnedHeaderPosition = -1;
+        mPinnedHeaderView = null;
     }
 
     /**
@@ -528,6 +571,27 @@ public class HeaderItemDecoration extends RecyclerView.ItemDecoration {
 
     public int getPinnedHeaderPosition() {
         return mPinnedHeaderPosition;
+    }
+
+    /**
+     * 是否禁止绘制粘性头部
+     *
+     * @return true的话不绘制头部
+     */
+    public boolean isDisableDrawHeader() {
+        return mDisableDrawHeader;
+    }
+
+    /**
+     * 禁止绘制粘性头部
+     *
+     * @param disableDrawHeader true的话不绘制头部，默认false绘制头部
+     */
+    public void disableDrawHeader(boolean disableDrawHeader) {
+        mDisableDrawHeader = disableDrawHeader;
+        if (mParent != null) {
+            mParent.invalidateItemDecorations();
+        }
     }
 
     public static class Builder {
@@ -608,10 +672,11 @@ public class HeaderItemDecoration extends RecyclerView.ItemDecoration {
             return this;
         }
 
-        public HeaderItemDecoration create() {
-            return new HeaderItemDecoration(this);
+        public PinnedHeaderItemDecoration create() {
+            return new PinnedHeaderItemDecoration(this);
         }
 
     }
+
 
 }
